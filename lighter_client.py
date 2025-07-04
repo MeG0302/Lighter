@@ -1,25 +1,27 @@
-# lighter_client.py
+# bot.py
 import os
-from lighter import LighterClient
+import time
 from dotenv import load_dotenv
+from lighter_client import LighterBot
 
 load_dotenv()
 
-class LighterBot:
-    def __init__(self, private_key: str):
-        self.client = LighterClient(private_key=private_key)
+# Load private keys
+PRIVATE_KEY_1 = os.getenv("PRIVATE_KEY_1")
+PRIVATE_KEY_2 = os.getenv("PRIVATE_KEY_2")
 
-    def place_market_order(self, symbol, side, size):
-        return self.client.place_order(
-            market=symbol,
-            side=side,
-            size=size,
-            type="market"
-        )
+# Initialize bots
+bot1 = LighterBot(PRIVATE_KEY_1)  # LONG bot
+bot2 = LighterBot(PRIVATE_KEY_2)  # SHORT bot
 
-    def close_all_positions(self):
-        positions = self.client.get_positions()
-        for p in positions:
-            if float(p['size']) != 0:
-                side = 'sell' if p['side'] == 'buy' else 'buy'
-                self.place_market_order(p['market'], side, abs(float(p['size'])))
+def run_trade_cycle(interval_minutes=2, symbol="ETH-PERP", size=0.01):
+    print(f"Placing trades... (interval: {interval_minutes} minutes)")
+    bot1.place_market_order(symbol, "buy", size)  # LONG
+    bot2.place_market_order(symbol, "sell", size) # SHORT
+
+    print(f"Sleeping for {interval_minutes} minutes...")
+    time.sleep(interval_minutes * 60)
+
+    print("Closing trades...")
+    bot1.close_all_positions()
+    bot2.close_all_positions()
