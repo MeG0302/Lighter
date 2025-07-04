@@ -2,7 +2,7 @@
 import os
 import time
 from dotenv import load_dotenv
-from lighter_client import LighterBot
+from client import LighterBot
 
 load_dotenv()
 
